@@ -1,0 +1,56 @@
+use std
+
+const main = {
+	var vcnt = 0
+	var prog = std.try(std.fslurp(std.In))
+	var deadcode = false
+	var jumps = [][:]
+	var lblcnt = 0
+	
+	std.put("function $main() {{\n")
+	std.put(" @start\n")
+	std.put("  %ptr =l alloc16 1024\n")
+	std.put("  %r =l call $memset(l %ptr, l 0, l 1024)\n")
+	std.put("  %v =l copy 0\n")
+	for c in prog
+		if deadcode
+			continue
+		;;
+		match c castto(char)
+		| '.':
+			std.put("  %v =l loadl %ptr\n")
+			std.put("  %r =l call $putchar(l %v)\n")
+		| '+':
+			std.put("  %v =l loadl %ptr\n")
+			std.put("  %v =l add %v, 1\n")
+			std.put("  storel %ptr, %v\n")
+		| '[':
+			var curlabel = lblcnt++
+			var ifzero = lblcnt++
+			var ifnotzero = lblcnt++
+			std.slpush(&jumps, ifzero)
+			std.slpush(&jumps, ifnotzero)
+			std.put(" @.L{}\n", curlabel)
+			deadcode = false
+			std.put("  %v =l loadl %ptr\n")
+			std.put("  jz @v, @.L{}, @.L{}", iftrue, iffalse)
+		| ']':
+			std.put(" jmp @.L{}\n", jumps[jumps.len-1])
+			(jumps, _) = std.slpop(jumps) // XXX fix slpop to be &sl
+			deadcode = true
+		| '-':
+			std.put("  %v =l loadl %ptr\n")
+			std.put("  %v =l sub %v, 1\n")
+			std.put("  storel %ptr, %v\n")
+		| '>':
+			std.put("  %ptr =l add %ptr, 1\n")
+		| '<':
+			std.put("  %ptr =l sub %ptr, 1\n")
+		| _:
+			/* nothing */
+		;;
+	;;
+	std.put(" @end\n")
+	std.put("  ret\n")
+	std.put("}}\n")
+}
