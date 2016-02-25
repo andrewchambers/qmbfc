@@ -54,10 +54,7 @@ const main = {
 			if jumps.len == 0
 				std.fatal("unmatched ]\n")
 			;;
-			var j
-			(j, jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
-			// mcbug
-			(l1, l2) = j
+			((l1, l2), jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
 			std.put("  jmp @.L{}\n", l1)
 			std.put(" @.L{}\n", l2)
 		| '>':
