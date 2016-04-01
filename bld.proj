@@ -1,1 +1,2 @@
 bin qmbfc = qmbfc.myr ;;
+bin lmbfc = lmbfc.myr ;;
