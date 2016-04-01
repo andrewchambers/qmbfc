@@ -1,0 +1,119 @@
+use std
+
+const main = {
+	var amount
+	var prog = std.try(std.fslurp(std.In))
+	var jumps = [][:]
+	var lblcnt = 0
+	var tmpcnt = 1
+	var t1, t2, t3, l1, l2, l3
+
+	std.put("target triple = \"x86_64-unknown-linux-gnu\"")
+	std.put("declare void @putchar(i32)\n")
+	std.put("declare void @memset(i32*, i8, i64)\n");
+	std.put("define i32 @main() {{\n")
+	std.put("  %tape = alloca [1024 x i32], align 4\n")
+	std.put("  %ptr = alloca i32*, align 8\n")
+	std.put("  %t0 = bitcast [1024 x i32]* %tape to i32*\n")
+	std.put("  store i32* %t0, i32** %ptr\n")
+	std.put("  call void @memset(i32* %t0,  i8 0, i64 4096)\n")
+	for var i = 0; i < prog.len; i++
+		var c = prog[i]
+		match c castto(char)
+		| '.':
+			t1 = tmpcnt++
+			t2 = tmpcnt++
+			std.put("  %t{} = load i32*, i32** %ptr\n", t1)
+			std.put("  %t{} = load i32, i32* %t{}\n", t2, t1)
+			std.put("  call void @putchar(i32 %t{})\n", t2)
+		| '+':
+			:addsubv
+			amount = 0
+			while true
+				match c castto(char)
+				| '+':
+					amount += 1
+				| '-':
+					amount -= 1
+				| _:
+					i -= 1
+					break
+				;;
+				i += 1
+				if i == prog.len
+					break
+				;;
+				c = prog[i]
+			;;
+			t1 = tmpcnt++
+			t2 = tmpcnt++
+			t3 = tmpcnt++
+			std.put("  %t{} = load i32*, i32** %ptr\n", t1)
+			std.put("  %t{} = load i32, i32* %t{}\n", t2, t1)
+			std.put("  %t{} = add nsw i32 %t{}, {}\n", t3, t2, amount)
+			std.put("  store i32 %t{}, i32* %t{}\n", t3, t1)
+		| '-':
+			goto addsubv
+		| '[':
+			l1 = lblcnt++
+			l2 = lblcnt++
+			l3 = lblcnt++
+			t1 = tmpcnt++
+			t2 = tmpcnt++
+			t3 = tmpcnt++
+			std.slpush(&jumps, (l1, l3))
+			std.put("  br label %L{}\n", l1)
+			std.put(" L{}:\n", l1)
+			std.put("  %t{} = load i32*, i32** %ptr\n", t1)
+			std.put("  %t{} = load i32, i32* %t{}\n", t2, t1)
+			std.put("  %t{} = icmp ne i32 %t{}, 0\n", t3, t2)
+			std.put("  br i1 %t{}, label %L{}, label %L{}\n", t3, l2, l3)
+			std.put(" L{}:\n", l2)
+		| ']':
+			if jumps.len == 0
+				std.fatal("unmatched ]\n")
+			;;
+			var j
+			(j, jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
+			// mcbug
+			(l1, l2) = j
+			std.put("  br label %L{}\n", l1)
+			std.put(" L{}:\n", l2)
+		| '>':
+			:addsubp
+			amount = 0
+			while true
+				match c castto(char)
+				| '>':
+					amount += 1
+				| '<':
+					amount -= 1
+				| _:
+					i -= 1
+					break
+				;;
+				i += 1
+				if i == prog.len
+					break
+				;;
+				c = prog[i]
+			;;
+			t1 = tmpcnt++
+			t2 = tmpcnt++
+			std.put("  %t{} = load i32*, i32** %ptr\n", t1)
+			std.put("  %t{} = getelementptr i32, i32* %t{}, i64 {}\n", t2, t1, amount)
+			std.put("  store i32* %t{}, i32** %ptr\n", t2)
+		| '<':
+			goto addsubp
+		| _:
+			/* nothing */
+		;;
+	;;
+	if jumps.len != 0
+		std.fatal("unmatched [\n")
+	;;
+	std.put("  br label %end\n")
+	std.put(" end:\n")
+	std.put("  ret i32 0\n")
+	std.put("}}\n")
+}
