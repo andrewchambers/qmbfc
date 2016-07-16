@@ -7,13 +7,14 @@ const main = {
 	var lblcnt = 0
 	var l1, l2, l3
 	
+	std.put("export\n")
 	std.put("function w $main() {{\n")
 	std.put(" @start\n")
 	std.put("  %ptr =l alloc16 4096\n")
 	std.put("  %r =l call $memset(l %ptr, l 0, l 4096)\n")
 	for var i = 0; i < prog.len; i++
 		var c = prog[i]
-		match c castto(char)
+		match (c : char)
 		| '.':
 			std.put("  %v =l loadl %ptr\n")
 			std.put("  %r =l call $putchar(l %v)\n")
@@ -21,7 +22,7 @@ const main = {
 			:addsubv
 			amount = 0
 			while true
-				match c castto(char)
+				match (c : char)
 				| '+':
 					amount += 1
 				| '-':
@@ -54,14 +55,14 @@ const main = {
 			if jumps.len == 0
 				std.fatal("unmatched ]\n")
 			;;
-			((l1, l2), jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
+			(l1, l2) = std.slpop(&jumps)
 			std.put("  jmp @.L{}\n", l1)
 			std.put(" @.L{}\n", l2)
 		| '>':
 			:addsubp
 			amount = 0
 			while true
-				match c castto(char)
+				match (c : char)
 				| '>':
 					amount += 8
 				| '<':

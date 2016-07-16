@@ -19,7 +19,7 @@ const main = {
 	std.put("  call void @memset(i32* %t0,  i8 0, i64 4096)\n")
 	for var i = 0; i < prog.len; i++
 		var c = prog[i]
-		match c castto(char)
+		match (c : char)
 		| '.':
 			t1 = tmpcnt++
 			t2 = tmpcnt++
@@ -30,7 +30,7 @@ const main = {
 			:addsubv
 			amount = 0
 			while true
-				match c castto(char)
+				match (c : char)
 				| '+':
 					amount += 1
 				| '-':
@@ -73,17 +73,14 @@ const main = {
 			if jumps.len == 0
 				std.fatal("unmatched ]\n")
 			;;
-			var j
-			(j, jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
-			// mcbug
-			(l1, l2) = j
+			(l1, l2) = std.slpop(&jumps)
 			std.put("  br label %L{}\n", l1)
 			std.put(" L{}:\n", l2)
 		| '>':
 			:addsubp
 			amount = 0
 			while true
-				match c castto(char)
+				match (c : char)
 				| '>':
 					amount += 1
 				| '<':
