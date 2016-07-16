@@ -12,8 +12,8 @@ const main = {
 	std.put("  %ptr =l alloc16 4096\n")
 	std.put("  %r =l call $memset(l %ptr, l 0, l 4096)\n")
 	for var i = 0; i < prog.len; i++
-		var c = std.decode(prog)
-		match c
+		var c = prog[i]
+		match c castto(char)
 		| '.':
 			std.put("  %v =l loadl %ptr\n")
 			std.put("  %r =l call $putchar(l %v)\n")
@@ -21,7 +21,7 @@ const main = {
 			:addsubv
 			amount = 0
 			while true
-				match c
+				match c castto(char)
 				| '+':
 					amount += 1
 				| '-':
@@ -30,11 +30,11 @@ const main = {
 					i -= 1
 					break
 				;;
-				i += std.charlen(c)
+				i += 1
 				if i == prog.len
 					break
 				;;
-				c = std.decode(prog)
+				c = prog[i]
 			;;
 			std.put("  %v =l loadl %ptr\n")
 			std.put("  %v =l add %v, {}\n", amount)
@@ -54,14 +54,14 @@ const main = {
 			if jumps.len == 0
 				std.fatal("unmatched ]\n")
 			;;
-			(l1, l2) = std.slpop(&jumps)
+			((l1, l2), jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
 			std.put("  jmp @.L{}\n", l1)
 			std.put(" @.L{}\n", l2)
 		| '>':
 			:addsubp
 			amount = 0
 			while true
-				match c
+				match c castto(char)
 				| '>':
 					amount += 8
 				| '<':
@@ -74,7 +74,7 @@ const main = {
 				if i == prog.len
 					break
 				;;
-				c = std.decode(prog)
+				c = prog[i]
 			;;
 			std.put("  %ptr =l add %ptr, {}\n", amount)
 		| '<':

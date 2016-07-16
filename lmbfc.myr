@@ -18,8 +18,8 @@ const main = {
 	std.put("  store i32* %t0, i32** %ptr\n")
 	std.put("  call void @memset(i32* %t0,  i8 0, i64 4096)\n")
 	for var i = 0; i < prog.len; i++
-		var c = std.decode(prog)
-		match c
+		var c = prog[i]
+		match c castto(char)
 		| '.':
 			t1 = tmpcnt++
 			t2 = tmpcnt++
@@ -30,7 +30,7 @@ const main = {
 			:addsubv
 			amount = 0
 			while true
-				match c
+				match c castto(char)
 				| '+':
 					amount += 1
 				| '-':
@@ -39,11 +39,11 @@ const main = {
 					i -= 1
 					break
 				;;
-				i += std.charlen(c)
+				i += 1
 				if i == prog.len
 					break
 				;;
-				c = std.decode(prog)
+				c = prog[i]
 			;;
 			t1 = tmpcnt++
 			t2 = tmpcnt++
@@ -73,14 +73,17 @@ const main = {
 			if jumps.len == 0
 				std.fatal("unmatched ]\n")
 			;;
-			(l1, l2) = std.slpop(&jumps)
+			var j
+			(j, jumps) = std.slpop(jumps) // XXX fix slpop to be &sl
+			// mcbug
+			(l1, l2) = j
 			std.put("  br label %L{}\n", l1)
 			std.put(" L{}:\n", l2)
 		| '>':
 			:addsubp
 			amount = 0
 			while true
-				match c
+				match c castto(char)
 				| '>':
 					amount += 1
 				| '<':
@@ -89,11 +92,11 @@ const main = {
 					i -= 1
 					break
 				;;
-				i += std.charlen(c)
+				i += 1
 				if i == prog.len
 					break
 				;;
-				c = std.decode(prog)
+				c = prog[i]
 			;;
 			t1 = tmpcnt++
 			t2 = tmpcnt++
